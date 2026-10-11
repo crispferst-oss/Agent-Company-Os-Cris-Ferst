@@ -118,3 +118,133 @@ export const JevAuditLogSchema = z.object({
   timestamp: z.date().default(() => new Date()),
 });
 export type JevAuditLog = z.infer<typeof JevAuditLogSchema>;
+
+// === NSAS Schemas ===
+// Produto SaaS de consultoria jurídica preventiva para médicos de consultório.
+// Ver .claude/decisions/ADR-006 a ADR-010.
+
+/**
+ * Resultado da detecção de dado clínico na borda (CCS adapter).
+ * Classes definidas em ADR-009:
+ *   DC-1 = binário clínico (DICOM, PDF HL7/LOINC/CID, EXIF médico)
+ *   DC-2 = estruturado colado (CID-10, resultado lab, TUSS)
+ *   DC-3 = narrativa clínica
+ *   DC-4 = identificador vinculável (prontuário, CNS, guia TISS)
+ */
+export const NsasDetectorVeredictoSchema = z.object({
+  classe: z.enum(['DC-1', 'DC-2', 'DC-3', 'DC-4', 'limpo']),
+  confianca: z.number().min(0).max(1),
+  acao: z.enum(['recusa_dura', 'mascara_in_place', 'pseudonimo_deterministico', 'aceita']),
+  motivo: z.string(),
+  span: z.object({
+    start: z.number().nonnegative().optional(),
+    end: z.number().nonnegative().optional(),
+    campo: z.string().optional(),
+  }).optional(),
+});
+export type NsasDetectorVeredicto = z.infer<typeof NsasDetectorVeredictoSchema>;
+
+/**
+ * Enumeração fechada dos predicados v1.0 (ADR-010).
+ * Mudanças exigem Conselho + ADR nova (regra V10 da ACG).
+ */
+export const NsasPredicadoIdSchema = z.enum([
+  '01', // prontuario_existe_e_tem_identificacao_minima
+  '02', // prazo_guarda_minima_cumprido
+  '03', // copia_entregue_quando_solicitada
+  '04', // tcle_formalizado_padrao_cfm
+  '05', // papel_do_medico_no_ato
+  '06', // documento_tem_identificacao_minima
+  '07', // cid_em_atestado_tem_autorizacao_expressa
+  '08', // plataforma_telemedicina_atende_sigilo
+  '09', // valor_ajustado_previamente_telemedicina
+  '10', // peca_contem_antes_depois
+  '11', // peca_promete_resultado
+  '12', // uso_de_imagem_de_paciente_tem_tcle_proprio
+  '13', // consultorio_e_agente_pequeno_porte
+  '14', // incidente_com_dado_sensivel_de_saude
+  '15', // cheque_caucao_exigido_em_emergencia
+]);
+export type NsasPredicadoId = z.infer<typeof NsasPredicadoIdSchema>;
+
+export const NsasPredicadoVerificadoSchema = z.object({
+  id: NsasPredicadoIdSchema,
+  valor: z.union([z.boolean(), z.string(), z.null()]),
+  resultado: z.enum(['verdadeiro', 'falso', 'inconclusivo']),
+  confianca: z.number().min(0).max(1),
+  evidencia_hash: z.string().optional(),
+  qualifier: z.enum(['verificado', 'autodeclarado', 'vigencia_pendente']).default('verificado'),
+});
+export type NsasPredicadoVerificado = z.infer<typeof NsasPredicadoVerificadoSchema>;
+
+/**
+ * Selo JWS emitido pelo CCS; verificado pelo Orquestrador antes de executar o Plano.
+ * Ausência ou falha de verificação ⇒ abort + alerta síncrono à titular (ADR-009).
+ */
+export const NsasSeloBordaSchema = z.object({
+  v: z.literal('1.0'),
+  policy_v: z.string(),
+  caso_id: z.string().uuid(),
+  issued_at: z.date(),
+  expires_at: z.date(),
+  canal_origem: z.enum(['profissional_autenticado', 'prontuario_pull', 'visualizador_titular']),
+  detectores: z.array(NsasDetectorVeredictoSchema).default([]),
+  predicados_verificados: z.array(NsasPredicadoVerificadoSchema).default([]),
+  cofre_id: z.string().optional(),
+  custodia_chave: z.array(z.string()).default([]),
+  sig: z.string(), // Ed25519 em base64; verificado no Orquestrador
+});
+export type NsasSeloBorda = z.infer<typeof NsasSeloBordaSchema>;
+
+/**
+ * Carga que atravessa a fronteira CCS → núcleo jurídico.
+ * NUNCA contém dado clínico bruto (ADR-009 invariante #2 da ADR-007).
+ */
+export const NsasCasoPseudonimizadoSchema = z.object({
+  caso_id: z.string().uuid(),
+  titular_ref: z.string(), // HMAC-SHA256 do beneficiário
+  fato_juridico: z.string(), // narrativa reescrita; sem clínica bruta
+  refs_clinicas: z.array(z.object({
+    ref: z.string(),
+    tipo: z.string(),
+    atributos: z.record(z.unknown()).default({}),
+  })).default([]),
+  documentos_opaco: z.array(z.object({
+    hash: z.string(),
+    tipo: z.string(),
+  })).default([]),
+  predicados: z.array(NsasPredicadoVerificadoSchema).default([]),
+  tradutor_v: z.string().default('1.0'),
+  selo: NsasSeloBordaSchema,
+});
+export type NsasCasoPseudonimizado = z.infer<typeof NsasCasoPseudonimizadoSchema>;
+
+/**
+ * Resultado da ingestão de borda — o que o CCS devolve ao chamador.
+ * Caminho feliz: `aceito=true` com `caso_id` para prosseguir ao Orquestrador.
+ * Caminho recusado: `aceito=false` com orientação sobre via legítima.
+ */
+export const NsasResultadoIngressoSchema = z.object({
+  aceito: z.boolean(),
+  caso_id: z.string().uuid().optional(),
+  motivo_recusa: z.string().optional(),
+  orientacao: z.string().optional(),
+  veredictos: z.array(NsasDetectorVeredictoSchema).default([]),
+});
+export type NsasResultadoIngresso = z.infer<typeof NsasResultadoIngressoSchema>;
+
+/**
+ * Formato de retorno padronizado dos especialistas NSAS (ADR-002).
+ * "Afirmação sem fonte é defeito" — _base-nsas.md.
+ */
+export const NsasParecerParcialSchema = z.object({
+  especialista: z.string(),
+  fatos: z.array(z.string()).default([]),
+  fundamentos: z.array(z.object({
+    norma: z.string(),
+    aplicacao: z.string(),
+  })).default([]),
+  riscos: z.array(z.string()).default([]),
+  fontes: z.array(z.string()).default([]),
+});
+export type NsasParecerParcial = z.infer<typeof NsasParecerParcialSchema>;
