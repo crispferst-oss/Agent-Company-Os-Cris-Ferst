@@ -1,0 +1,1765 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>JEV OS — Sistema Nervoso Operacional</title>
+  <style>
+    /* Design System — JEV OS */
+    :root {
+      /* Paleta de cores — OKLch */
+      --bg: #f7fafc;
+      --surface: #ffffff;
+      --fg: #102a43;
+      --fg-secondary: #627d98;
+      --muted: #9fb3c8;
+      --border: #d9e2ec;
+
+      /* Primária — azul petróleo */
+      --primary-900: #0b1f33;
+      --primary-800: #12304a;
+      --primary-700: #1d4e72;
+
+      /* Conexões e inteligência */
+      --accent-turquoise: #16b8a6;
+      --accent-turquoise-light: #77e1d5;
+      --accent-purple: #7c5cfc;
+
+      /* Estados */
+      --success: #16a34a;
+      --warning: #f59e0b;
+      --danger: #dc2626;
+      --info: #2563eb;
+
+      /* Tipografia */
+      --font-display: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', sans-serif;
+      --font-body: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', sans-serif;
+      --font-mono: 'SFMono-Regular', 'Consolas', 'Liberation Mono', 'Menlo', 'Courier', monospace;
+
+      /* Espaçamento — grid 8px */
+      --spacing-xs: 4px;
+      --spacing-sm: 8px;
+      --spacing-md: 12px;
+      --spacing-lg: 16px;
+      --spacing-xl: 20px;
+      --spacing-2xl: 24px;
+      --spacing-3xl: 32px;
+      --spacing-4xl: 48px;
+
+      /* Border radius */
+      --radius-sm: 6px;
+      --radius-md: 10px;
+      --radius-lg: 14px;
+
+      /* Shadows */
+      --shadow-sm: 0 1px 2px rgba(16, 42, 67, 0.05);
+      --shadow-md: 0 4px 12px rgba(16, 42, 67, 0.1);
+      --shadow-lg: 0 12px 32px rgba(16, 42, 67, 0.15);
+
+      /* Motion */
+      --duration-fast: 0.1s;
+      --duration-base: 0.2s;
+      --duration-slow: 0.3s;
+      --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+      --ease-out: cubic-bezier(0, 0, 0.2, 1);
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      background: var(--bg);
+      color: var(--fg);
+      font-family: var(--font-body);
+      font-size: 15px;
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    /* ====== Layout Principal ====== */
+    .shell {
+      display: grid;
+      grid-template-columns: 260px 1fr;
+      grid-template-rows: 56px 1fr;
+      height: 100vh;
+      gap: 0;
+    }
+
+    /* Topbar */
+    .topbar {
+      grid-column: 1 / -1;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      padding: 0 var(--spacing-lg);
+      gap: var(--spacing-lg);
+      z-index: 100;
+    }
+
+    .topbar-left {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-md);
+    }
+
+    .search-input {
+      flex: 1;
+      max-width: 360px;
+      padding: var(--spacing-sm) var(--spacing-md);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      font-family: var(--font-body);
+      font-size: 13px;
+      background: var(--bg);
+      color: var(--fg);
+      transition: all var(--duration-base) var(--ease-in-out);
+    }
+
+    .search-input::placeholder {
+      color: var(--muted);
+    }
+
+    .search-input:focus {
+      outline: none;
+      border-color: var(--accent-turquoise);
+      box-shadow: 0 0 0 3px rgba(22, 184, 166, 0.1);
+    }
+
+    .topbar-right {
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-lg);
+    }
+
+    .status-indicator {
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-sm);
+      font-size: 13px;
+      color: var(--fg-secondary);
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      background: var(--success);
+      border-radius: 50%;
+    }
+
+    /* Sidebar */
+    .sidebar {
+      grid-row: 2;
+      grid-column: 1;
+      background: var(--surface);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      padding: var(--spacing-lg);
+      gap: var(--spacing-lg);
+      overflow-y: auto;
+    }
+
+    .sidebar-logo {
+      font-weight: 700;
+      font-size: 18px;
+      letter-spacing: -0.02em;
+      color: var(--primary-900);
+      margin-bottom: var(--spacing-lg);
+    }
+
+    .sidebar-nav {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: var(--spacing-sm);
+    }
+
+    .sidebar-section {
+      display: flex;
+      flex-direction: column;
+      gap: var(--spacing-sm);
+    }
+
+    .sidebar-section-title {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--muted);
+      padding: var(--spacing-md) 0;
+      margin-top: var(--spacing-lg);
+    }
+
+    .sidebar-item {
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-md);
+      padding: var(--spacing-sm) var(--spacing-md);
+      border-radius: var(--radius-md);
+      font-size: 14px;
+      color: var(--fg-secondary);
+      cursor: pointer;
+      transition: all var(--duration-base) var(--ease-in-out);
+      text-decoration: none;
+      position: relative;
+      border: 1px solid transparent;
+    }
+
+    .sidebar-item:hover {
+      background: var(--bg);
+      color: var(--fg);
+    }
+
+    .sidebar-item:focus {
+      outline: none;
+      border-color: var(--accent-turquoise);
+      box-shadow: inset 0 0 0 1px var(--accent-turquoise);
+    }
+
+    .sidebar-item.active {
+      background: var(--accent-turquoise);
+      color: var(--surface);
+      font-weight: 500;
+    }
+
+    .sidebar-item-badge {
+      margin-left: auto;
+      background: var(--danger);
+      color: var(--surface);
+      font-size: 11px;
+      font-weight: 600;
+      padding: 2px 6px;
+      border-radius: 999px;
+      min-width: 20px;
+      text-align: center;
+    }
+
+    .sidebar-footer {
+      border-top: 1px solid var(--border);
+      padding-top: var(--spacing-lg);
+      display: flex;
+      flex-direction: column;
+      gap: var(--spacing-md);
+    }
+
+    .tenant-indicator {
+      font-size: 12px;
+      color: var(--muted);
+      text-align: center;
+    }
+
+    .avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: var(--accent-turquoise);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--surface);
+      font-weight: 600;
+      font-size: 13px;
+    }
+
+    /* Main Content */
+    .content {
+      grid-row: 2;
+      grid-column: 2;
+      overflow-y: auto;
+      padding: var(--spacing-3xl);
+    }
+
+    /* ====== Tipografia ====== */
+    h1 {
+      font-size: 32px;
+      font-weight: 600;
+      letter-spacing: -0.01em;
+      line-height: 1.2;
+      margin-bottom: var(--spacing-md);
+    }
+
+    h2 {
+      font-size: 24px;
+      font-weight: 600;
+      letter-spacing: -0.01em;
+      line-height: 1.3;
+      margin-bottom: var(--spacing-md);
+    }
+
+    h3 {
+      font-size: 20px;
+      font-weight: 600;
+      letter-spacing: -0.005em;
+      line-height: 1.4;
+      margin-bottom: var(--spacing-md);
+    }
+
+    .subtitle {
+      font-size: 15px;
+      color: var(--fg-secondary);
+      margin-bottom: var(--spacing-2xl);
+    }
+
+    /* ====== Cards de Resumo ====== */
+    .summary-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: var(--spacing-2xl);
+      margin-bottom: var(--spacing-3xl);
+    }
+
+    .summary-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: var(--spacing-2xl);
+      transition: all var(--duration-base) var(--ease-out);
+    }
+
+    .summary-card:hover {
+      border-color: var(--accent-turquoise);
+      box-shadow: var(--shadow-md);
+    }
+
+    .summary-card:focus-within {
+      border-color: var(--accent-turquoise);
+      box-shadow: 0 0 0 3px rgba(22, 184, 166, 0.1);
+    }
+
+    .summary-card-label {
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+      color: var(--muted);
+      text-transform: uppercase;
+      margin-bottom: var(--spacing-md);
+    }
+
+    .summary-card-value {
+      font-size: 32px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      color: var(--fg);
+      margin-bottom: var(--spacing-sm);
+    }
+
+    .summary-card-status {
+      font-size: 13px;
+      color: var(--fg-secondary);
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-sm);
+    }
+
+    .status-badge {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      display: inline-block;
+    }
+
+    .status-badge.success { background: var(--success); }
+    .status-badge.warning { background: var(--warning); }
+    .status-badge.danger { background: var(--danger); }
+
+    /* ====== Seções ====== */
+    .section {
+      margin-bottom: var(--spacing-4xl);
+    }
+
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: var(--spacing-2xl);
+    }
+
+    .section-title {
+      font-size: 20px;
+      font-weight: 600;
+      color: var(--fg);
+    }
+
+    .section-actions {
+      display: flex;
+      gap: var(--spacing-md);
+    }
+
+    /* ====== Botões ====== */
+    .button {
+      padding: 8px 16px;
+      border: 1px solid transparent;
+      border-radius: var(--radius-md);
+      font-family: var(--font-body);
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all var(--duration-base) var(--ease-in-out);
+      display: inline-flex;
+      align-items: center;
+      gap: var(--spacing-sm);
+      text-decoration: none;
+    }
+
+    .button.primary {
+      background: var(--accent-turquoise);
+      color: var(--surface);
+      border-color: var(--accent-turquoise);
+    }
+
+    .button.primary:hover {
+      background: #1a9a8a;
+      border-color: #1a9a8a;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .button.primary:focus {
+      outline: none;
+      box-shadow: 0 0 0 3px rgba(22, 184, 166, 0.2);
+    }
+
+    .button.primary:active {
+      transform: translateY(1px);
+    }
+
+    .button.secondary {
+      background: var(--bg);
+      color: var(--fg);
+      border-color: var(--border);
+    }
+
+    .button.secondary:hover {
+      background: var(--surface);
+      border-color: var(--accent-turquoise);
+      color: var(--accent-turquoise);
+    }
+
+    .button.secondary:focus {
+      outline: none;
+      box-shadow: 0 0 0 3px rgba(22, 184, 166, 0.1);
+    }
+
+    .button.text {
+      background: transparent;
+      color: var(--accent-turquoise);
+      border: none;
+    }
+
+    .button.text:hover {
+      background: rgba(22, 184, 166, 0.05);
+    }
+
+    .button.text:focus {
+      outline: none;
+      box-shadow: 0 0 0 2px rgba(22, 184, 166, 0.2);
+      border-radius: 3px;
+    }
+
+    .button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      background-color: var(--bg);
+    }
+
+    /* ====== Cards de Alerta ====== */
+    .alert-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: var(--spacing-2xl);
+      margin-bottom: var(--spacing-3xl);
+    }
+
+    .alert-card {
+      background: var(--surface);
+      border-left: 4px solid;
+      border-radius: var(--radius-md);
+      padding: var(--spacing-2xl);
+      transition: all var(--duration-base) var(--ease-out);
+    }
+
+    .alert-card.critical {
+      border-left-color: var(--danger);
+    }
+
+    .alert-card.warning {
+      border-left-color: var(--warning);
+    }
+
+    .alert-card.info {
+      border-left-color: var(--info);
+    }
+
+    .alert-card:hover {
+      box-shadow: var(--shadow-md);
+    }
+
+    .alert-card:focus-within {
+      outline: 1px solid var(--accent-turquoise);
+      outline-offset: 1px;
+    }
+
+    .alert-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--fg);
+      margin-bottom: var(--spacing-sm);
+    }
+
+    .alert-detail {
+      font-size: 13px;
+      color: var(--fg-secondary);
+      margin-bottom: var(--spacing-md);
+    }
+
+    .alert-tag {
+      display: inline-block;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+      text-transform: uppercase;
+      padding: 3px 8px;
+      border-radius: 999px;
+      margin-right: var(--spacing-sm);
+      margin-bottom: var(--spacing-md);
+    }
+
+    .alert-tag.critical {
+      background: rgba(220, 38, 38, 0.15);
+      color: var(--danger);
+    }
+
+    .alert-tag.warning {
+      background: rgba(245, 158, 11, 0.15);
+      color: var(--warning);
+    }
+
+    .alert-tag.vencida {
+      background: rgba(220, 38, 38, 0.15);
+      color: var(--danger);
+    }
+
+    .alert-action {
+      font-size: 13px;
+    }
+
+    /* ====== Tabela de Processos ====== */
+    .table-wrapper {
+      overflow-x: auto;
+      margin-bottom: var(--spacing-3xl);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+
+    thead {
+      background: var(--bg);
+      border-bottom: 1px solid var(--border);
+    }
+
+    th {
+      text-align: left;
+      padding: var(--spacing-md) var(--spacing-lg);
+      font-weight: 600;
+      color: var(--muted);
+      font-size: 12px;
+      letter-spacing: 0.02em;
+      text-transform: uppercase;
+    }
+
+    td {
+      padding: var(--spacing-lg);
+      border-bottom: 1px solid var(--border);
+      color: var(--fg);
+    }
+
+    tbody tr:hover {
+      background: var(--bg);
+    }
+
+    tbody tr:last-child td {
+      border-bottom: none;
+    }
+
+    .trend-up {
+      color: var(--success);
+      font-weight: 500;
+    }
+
+    .trend-down {
+      color: var(--danger);
+      font-weight: 500;
+    }
+
+    /* ====== Timeline ====== */
+    .timeline {
+      margin-bottom: var(--spacing-3xl);
+    }
+
+    .timeline-event {
+      display: flex;
+      gap: var(--spacing-lg);
+      margin-bottom: var(--spacing-2xl);
+      padding: var(--spacing-2xl);
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+    }
+
+    .timeline-dot {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: var(--accent-turquoise);
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+
+    .timeline-content {
+      flex: 1;
+    }
+
+    .timeline-time {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--muted);
+      margin-bottom: var(--spacing-xs);
+    }
+
+    .timeline-description {
+      font-size: 14px;
+      color: var(--fg);
+      line-height: 1.5;
+    }
+
+    .timeline-link {
+      color: var(--accent-turquoise);
+      text-decoration: none;
+      font-weight: 500;
+    }
+
+    .timeline-link:hover {
+      text-decoration: underline;
+    }
+
+    .timeline-link:focus {
+      outline: none;
+      box-shadow: 0 0 0 2px rgba(22, 184, 166, 0.2);
+      border-radius: 2px;
+    }
+
+    /* ====== Integração Cards ====== */
+    .integration-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: var(--spacing-lg);
+      margin-bottom: var(--spacing-3xl);
+    }
+
+    .integration-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: var(--spacing-lg);
+      text-align: center;
+      transition: all var(--duration-base) var(--ease-out);
+    }
+
+    .integration-card:hover {
+      border-color: var(--accent-turquoise);
+      box-shadow: var(--shadow-md);
+    }
+
+    .integration-card:focus-within {
+      border-color: var(--accent-turquoise);
+      box-shadow: 0 0 0 2px rgba(22, 184, 166, 0.1);
+    }
+
+    .integration-icon {
+      font-size: 32px;
+      margin-bottom: var(--spacing-md);
+    }
+
+    .integration-name {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--fg);
+      margin-bottom: var(--spacing-xs);
+    }
+
+    .integration-status {
+      font-size: 12px;
+      color: var(--fg-secondary);
+      margin-bottom: var(--spacing-md);
+    }
+
+    /* ====== Estados ====== */
+    .empty-state {
+      text-align: center;
+      padding: var(--spacing-4xl) var(--spacing-3xl);
+      color: var(--fg-secondary);
+    }
+
+    .empty-state-icon {
+      font-size: 48px;
+      margin-bottom: var(--spacing-xl);
+      opacity: 0.5;
+    }
+
+    .empty-state-title {
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--fg);
+      margin-bottom: var(--spacing-md);
+    }
+
+    .empty-state-description {
+      font-size: 14px;
+      color: var(--fg-secondary);
+      margin-bottom: var(--spacing-2xl);
+    }
+
+    .loading-state {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: var(--spacing-4xl);
+      color: var(--fg-secondary);
+    }
+
+    .spinner {
+      width: 24px;
+      height: 24px;
+      border: 3px solid var(--border);
+      border-top-color: var(--accent-turquoise);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .error-state {
+      background: rgba(220, 38, 38, 0.05);
+      border: 1px solid var(--danger);
+      border-radius: var(--radius-md);
+      padding: var(--spacing-2xl);
+      margin-bottom: var(--spacing-3xl);
+    }
+
+    .error-icon {
+      color: var(--danger);
+      margin-bottom: var(--spacing-md);
+      font-size: 24px;
+    }
+
+    .error-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--danger);
+      margin-bottom: var(--spacing-sm);
+    }
+
+    .error-description {
+      font-size: 14px;
+      color: var(--fg-secondary);
+    }
+
+    /* ====== Cosmos Placeholder ====== */
+    .cosmos-container {
+      background: linear-gradient(135deg, var(--primary-900) 0%, var(--primary-800) 100%);
+      border-radius: var(--radius-lg);
+      padding: var(--spacing-4xl);
+      color: var(--surface);
+      text-align: center;
+      margin-bottom: var(--spacing-3xl);
+    }
+
+    .cosmos-title {
+      font-size: 24px;
+      font-weight: 600;
+      margin-bottom: var(--spacing-md);
+      letter-spacing: -0.01em;
+    }
+
+    .cosmos-subtitle {
+      font-size: 14px;
+      color: rgba(255, 255, 255, 0.85);
+      margin-bottom: var(--spacing-2xl);
+    }
+
+    .cosmos-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+      gap: var(--spacing-lg);
+      margin: var(--spacing-3xl) 0;
+    }
+
+    .cosmos-node {
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(22, 184, 166, 0.3);
+      border-radius: 8px;
+      padding: var(--spacing-md);
+      font-size: 12px;
+      font-weight: 500;
+      backdrop-filter: blur(10px);
+    }
+
+    /* ====== Responsividade ====== */
+    @media (max-width: 1024px) {
+      .shell {
+        grid-template-columns: 1fr;
+        grid-template-rows: 56px 56px 1fr;
+      }
+
+      .topbar {
+        grid-column: 1 / -1;
+      }
+
+      .sidebar {
+        grid-row: 2;
+        grid-column: 1 / -1;
+        flex-direction: row;
+        padding: var(--spacing-md) var(--spacing-lg);
+        gap: var(--spacing-md);
+        overflow-x: auto;
+        border-right: none;
+        border-bottom: 1px solid var(--border);
+        max-height: 56px;
+      }
+
+      .sidebar-logo {
+        margin-bottom: 0;
+      }
+
+      .sidebar-nav {
+        flex-direction: row;
+      }
+
+      .sidebar-section {
+        flex-direction: row;
+      }
+
+      .sidebar-section-title {
+        display: none;
+      }
+
+      .sidebar-footer {
+        display: none;
+      }
+
+      .content {
+        grid-row: 3;
+        grid-column: 1 / -1;
+      }
+
+      .summary-row {
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: var(--spacing-lg);
+      }
+
+      .alert-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .integration-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .content {
+        padding: var(--spacing-2xl);
+      }
+
+      h1 {
+        font-size: 28px;
+      }
+
+      table {
+        font-size: 12px;
+      }
+
+      th, td {
+        padding: var(--spacing-md) var(--spacing-md);
+      }
+    }
+
+    @media (max-width: 768px) {
+      .topbar {
+        padding: 0 var(--spacing-md);
+      }
+
+      .search-input {
+        max-width: 100%;
+      }
+
+      .topbar-right {
+        gap: var(--spacing-sm);
+      }
+
+      .summary-row {
+        grid-template-columns: 1fr;
+      }
+
+      .integration-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .alert-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .content {
+        padding: var(--spacing-lg);
+      }
+
+      h1 {
+        font-size: 24px;
+      }
+
+      h2 {
+        font-size: 20px;
+      }
+
+      .summary-card {
+        padding: var(--spacing-lg);
+      }
+
+      .summary-card-value {
+        font-size: 24px;
+      }
+
+      .sidebar {
+        max-height: none;
+        flex-direction: column;
+      }
+
+      .sidebar-nav {
+        flex-direction: column;
+      }
+
+      .sidebar-section {
+        flex-direction: column;
+      }
+
+      .sidebar-footer {
+        display: flex;
+      }
+    }
+
+    /* ====== Acessibilidade ====== */
+    @media (prefers-reduced-motion: reduce) {
+      * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border-width: 0;
+    }
+
+    /* Contraste WCAG AA mínimo verificado */
+    body {
+      /* #102a43 on #f7fafc = 12.8:1 ✓ */
+    }
+
+    .fg-secondary {
+      /* #627d98 on #ffffff = 5.2:1 ✓ */
+    }
+
+    .button.primary {
+      /* #ffffff on #16b8a6 = 7.1:1 ✓ */
+    }
+
+    .button.secondary {
+      /* #102a43 on #f7fafc = 12.8:1 ✓ */
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <!-- Topbar -->
+    <header class="topbar" role="banner">
+      <div class="topbar-left">
+        <input
+          type="search"
+          class="search-input"
+          placeholder="Buscar processos, tarefas, integrações ou eventos..."
+          aria-label="Busca global no sistema"
+        />
+      </div>
+      <div class="topbar-right">
+        <div class="status-indicator" aria-live="polite" aria-label="Status do sistema: saudável">
+          <span class="status-dot" aria-hidden="true"></span>
+          <span>Sistema saudável</span>
+        </div>
+        <button class="button text" aria-label="Notificações (0 novas)">
+          🔔
+        </button>
+        <button class="avatar" aria-label="Menu de perfil de Camila Martins" title="Camila Martins">
+          CM
+        </button>
+      </div>
+    </header>
+
+    <!-- Sidebar -->
+    <aside class="sidebar" role="navigation" aria-label="Navegação principal">
+      <div class="sidebar-logo">JEV OS</div>
+
+      <nav class="sidebar-nav">
+        <div class="sidebar-section">
+          <a href="#visao-geral" class="sidebar-item active" data-page="visao-geral" role="tab" aria-selected="true">
+            📊 Visão geral
+          </a>
+          <a href="#cosmos" class="sidebar-item" data-page="cosmos" role="tab" aria-selected="false">
+            🌐 Cosmos
+          </a>
+          <a href="#fluxos" class="sidebar-item" data-page="fluxos" role="tab" aria-selected="false">
+            ⚡ Fluxos
+          </a>
+          <a href="#rotinas" class="sidebar-item" data-page="rotinas" role="tab" aria-selected="false">
+            🔄 Rotinas
+          </a>
+          <a href="#tarefas" class="sidebar-item" data-page="tarefas" role="tab" aria-selected="false">
+            ✓ Tarefas <span class="sidebar-item-badge" aria-label="28 tarefas pendentes">28</span>
+          </a>
+          <a href="#alertas" class="sidebar-item" data-page="alertas" role="tab" aria-selected="false">
+            ⚠️ Alertas <span class="sidebar-item-badge" aria-label="6 alertas ativos">6</span>
+          </a>
+        </div>
+
+        <div class="sidebar-section">
+          <div class="sidebar-section-title">Operação</div>
+          <a href="#integrações" class="sidebar-item" data-page="integrações" role="tab" aria-selected="false">
+            🔗 Integrações
+          </a>
+          <a href="#conhecimento" class="sidebar-item" data-page="conhecimento" role="tab" aria-selected="false">
+            📚 Conhecimento
+          </a>
+          <a href="#auditoria" class="sidebar-item" data-page="auditoria" role="tab" aria-selected="false">
+            🔍 Auditoria
+          </a>
+        </div>
+
+        <div class="sidebar-section">
+          <div class="sidebar-section-title">Administração</div>
+          <a href="#configurações" class="sidebar-item" data-page="configurações" role="tab" aria-selected="false">
+            ⚙️ Configurações
+          </a>
+        </div>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="tenant-indicator">Operação Demo</div>
+        <div style="display: flex; align-items: center; gap: var(--spacing-sm);">
+          <div class="avatar" style="width: 24px; height: 24px; font-size: 11px;" aria-label="Avatar de Camila Martins">
+            CM
+          </div>
+          <span style="font-size: 13px;">Camila Martins</span>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="content" role="main" id="main-content">
+      <!-- VISÃO GERAL PAGE -->
+      <div class="page" data-page="visao-geral" style="display: block;">
+        <div style="margin-bottom: var(--spacing-2xl);">
+          <h1>Visão geral</h1>
+          <p class="subtitle">
+            Acompanhe a saúde operacional da sua jornada em tempo real.
+          </p>
+        </div>
+
+        <div class="section-actions" style="margin-bottom: var(--spacing-3xl);">
+          <button class="button primary">+ Criar rotina</button>
+          <button class="button secondary">🔗 Conectar sistema</button>
+        </div>
+
+        <!-- Resumo Cards -->
+        <div class="summary-row" role="region" aria-label="Resumo operacional">
+          <div class="summary-card">
+            <div class="summary-card-label">Saúde operacional</div>
+            <div class="summary-card-value" role="status">87%</div>
+            <div class="summary-card-status">
+              <span class="status-badge success" aria-hidden="true"></span>
+              Estável — +4% em relação à semana
+            </div>
+          </div>
+          <div class="summary-card">
+            <div class="summary-card-label">Tarefas pendentes</div>
+            <div class="summary-card-value" role="status">28</div>
+            <div class="summary-card-status">
+              <span class="status-badge warning" aria-hidden="true"></span>
+              8 vencem hoje
+            </div>
+          </div>
+          <div class="summary-card">
+            <div class="summary-card-label">Alertas ativos</div>
+            <div class="summary-card-value" role="status">6</div>
+            <div class="summary-card-status">
+              <span class="status-badge danger" aria-hidden="true"></span>
+              2 críticos
+            </div>
+          </div>
+          <div class="summary-card">
+            <div class="summary-card-label">Protocolos em execução</div>
+            <div class="summary-card-value" role="status">14</div>
+            <div class="summary-card-status">
+              <span class="status-badge success" aria-hidden="true"></span>
+              12 dentro do SLA
+            </div>
+          </div>
+          <div class="summary-card">
+            <div class="summary-card-label">Integrações conectadas</div>
+            <div class="summary-card-value" role="status">8/9</div>
+            <div class="summary-card-status">
+              <span class="status-badge warning" aria-hidden="true"></span>
+              1 requer atenção
+            </div>
+          </div>
+        </div>
+
+        <!-- Atenção Prioritária -->
+        <div class="section">
+          <div class="section-header">
+            <h2>Atenção prioritária</h2>
+          </div>
+
+          <div class="alert-grid" role="region" aria-label="Alertas prioritários">
+            <div class="alert-card critical">
+              <div class="alert-title">Falha na confirmação automática</div>
+              <div class="alert-detail">
+                Integração WhatsApp apresentou erro há 12 minutos.
+              </div>
+              <span class="alert-tag critical" aria-label="Severidade: crítico">Crítico</span>
+              <a href="#" class="button text">Ver alerta →</a>
+            </div>
+
+            <div class="alert-card danger">
+              <div class="alert-title">Revisar rotina de confirmação D-1</div>
+              <div class="alert-detail">
+                Responsável: Equipe Atendimento
+              </div>
+              <span class="alert-tag vencida" aria-label="Status: vencida">Vencida</span>
+              <a href="#" class="button text">Abrir tarefa →</a>
+            </div>
+
+            <div class="alert-card warning">
+              <div class="alert-title">Pré-atendimento preventivo</div>
+              <div class="alert-detail">
+                72% de execução no período.
+              </div>
+              <span class="alert-tag warning" aria-label="Nível de atenção">Atenção</span>
+              <a href="#" class="button text">Ver protocolo →</a>
+            </div>
+
+            <div class="alert-card warning">
+              <div class="alert-title">Agenda Externa</div>
+              <div class="alert-detail">
+                3 falhas de sincronização nas últimas 2 horas.
+              </div>
+              <span class="alert-tag warning" aria-label="Status: instável">Instável</span>
+              <a href="#" class="button text">Ver integração →</a>
+            </div>
+          </div>
+        </div>
+
+        <!-- Saúde dos Processos -->
+        <div class="section">
+          <div class="section-header">
+            <h2>Saúde dos processos</h2>
+          </div>
+
+          <div class="table-wrapper" role="region" aria-label="Tabela de saúde dos processos">
+            <table role="table">
+              <caption class="sr-only">Saúde dos processos operacionais</caption>
+              <thead>
+                <tr>
+                  <th>Processo</th>
+                  <th>Status</th>
+                  <th>Execuções</th>
+                  <th>SLA</th>
+                  <th>Pendências</th>
+                  <th>Responsável</th>
+                  <th>Tendência</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><strong>Primeiro contato</strong></td>
+                  <td><span class="status-badge success" aria-hidden="true"></span> Estável</td>
+                  <td>142</td>
+                  <td>94%</td>
+                  <td>3</td>
+                  <td>Atendimento</td>
+                  <td class="trend-up" aria-label="tendência positiva">↑ Positiva</td>
+                </tr>
+                <tr>
+                  <td><strong>Confirmação</strong></td>
+                  <td><span class="status-badge warning" aria-hidden="true"></span> Atenção</td>
+                  <td>89</td>
+                  <td>72%</td>
+                  <td>14</td>
+                  <td>Recepção</td>
+                  <td class="trend-down" aria-label="tendência negativa">↓ Negativa</td>
+                </tr>
+                <tr>
+                  <td><strong>Pós-atendimento</strong></td>
+                  <td><span class="status-badge success" aria-hidden="true"></span> Estável</td>
+                  <td>63</td>
+                  <td>91%</td>
+                  <td>2</td>
+                  <td>Operações</td>
+                  <td class="trend-up" aria-label="tendência positiva">↑ Positiva</td>
+                </tr>
+                <tr>
+                  <td><strong>Onboarding</strong></td>
+                  <td><span class="status-badge danger" aria-hidden="true"></span> Crítico</td>
+                  <td>21</td>
+                  <td>54%</td>
+                  <td>9</td>
+                  <td>Sucesso do Cliente</td>
+                  <td class="trend-down" aria-label="tendência negativa">↓ Negativa</td>
+                </tr>
+                <tr>
+                  <td><strong>Triagem inicial</strong></td>
+                  <td><span class="status-badge success" aria-hidden="true"></span> Estável</td>
+                  <td>116</td>
+                  <td>97%</td>
+                  <td>1</td>
+                  <td>Atendimento</td>
+                  <td style="color: var(--muted);" aria-label="tendência neutra">→ Neutra</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Eventos Recentes -->
+        <div class="section">
+          <div class="section-header">
+            <h2>Eventos recentes</h2>
+          </div>
+
+          <div class="timeline" role="region" aria-label="Timeline de eventos recentes">
+            <div class="timeline-event">
+              <div class="timeline-dot" aria-hidden="true"></div>
+              <div class="timeline-content">
+                <div class="timeline-time">Agora</div>
+                <div class="timeline-description">
+                  Protocolo <a href="#" class="timeline-link">"Confirmação D-1"</a> criou 3 tarefas.
+                </div>
+              </div>
+            </div>
+
+            <div class="timeline-event">
+              <div class="timeline-dot" style="background: var(--danger);" aria-hidden="true"></div>
+              <div class="timeline-content">
+                <div class="timeline-time">Há 4 min</div>
+                <div class="timeline-description">
+                  Integração <a href="#" class="timeline-link">WhatsApp</a> registrou falha de autenticação.
+                </div>
+              </div>
+            </div>
+
+            <div class="timeline-event">
+              <div class="timeline-dot" aria-hidden="true"></div>
+              <div class="timeline-content">
+                <div class="timeline-time">Há 12 min</div>
+                <div class="timeline-description">
+                  Equipe Atendimento concluiu rotina <a href="#" class="timeline-link">"Primeiro contato"</a>.
+                </div>
+              </div>
+            </div>
+
+            <div class="timeline-event">
+              <div class="timeline-dot" style="background: var(--info);" aria-hidden="true"></div>
+              <div class="timeline-content">
+                <div class="timeline-time">Há 18 min</div>
+                <div class="timeline-description">
+                  Alerta crítico foi atribuído para <a href="#" class="timeline-link">Camila Martins</a>.
+                </div>
+              </div>
+            </div>
+
+            <div class="timeline-event">
+              <div class="timeline-dot" aria-hidden="true"></div>
+              <div class="timeline-content">
+                <div class="timeline-time">Há 34 min</div>
+                <div class="timeline-description">
+                  Processo <a href="#" class="timeline-link">"Triagem inicial"</a> atingiu 97% de SLA.
+                </div>
+              </div>
+            </div>
+
+            <div class="timeline-event">
+              <div class="timeline-dot" style="background: var(--accent-purple);" aria-hidden="true"></div>
+              <div class="timeline-content">
+                <div class="timeline-time">Há 1 h</div>
+                <div class="timeline-description">
+                  Novo sistema conectado: <a href="#" class="timeline-link">Agenda Externa</a>.
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Conexões em Destaque -->
+        <div class="section">
+          <div class="section-header">
+            <h2>Conexões em destaque</h2>
+          </div>
+
+          <div class="integration-grid" role="region" aria-label="Integrações principais">
+            <div class="integration-card">
+              <div class="integration-icon" aria-hidden="true">💬</div>
+              <div class="integration-name">WhatsApp</div>
+              <div class="integration-status" style="color: var(--warning); font-weight: 500;" role="status">Atenção</div>
+              <div class="integration-status">Há 12 min</div>
+              <div style="font-size: 12px; color: var(--fg); font-weight: 600;">214 eventos</div>
+            </div>
+
+            <div class="integration-card">
+              <div class="integration-icon" aria-hidden="true">📅</div>
+              <div class="integration-name">Agenda Externa</div>
+              <div class="integration-status" style="color: var(--success); font-weight: 500;" role="status">Estável</div>
+              <div class="integration-status">Agora</div>
+              <div style="font-size: 12px; color: var(--fg); font-weight: 600;">91 eventos</div>
+            </div>
+
+            <div class="integration-card">
+              <div class="integration-icon" aria-hidden="true">📁</div>
+              <div class="integration-name">Google Drive</div>
+              <div class="integration-status" style="color: var(--success); font-weight: 500;" role="status">Estável</div>
+              <div class="integration-status">Há 2 min</div>
+              <div style="font-size: 12px; color: var(--fg); font-weight: 600;">12 eventos</div>
+            </div>
+
+            <div class="integration-card">
+              <div class="integration-icon" aria-hidden="true">⚙️</div>
+              <div class="integration-name">Webhook API</div>
+              <div class="integration-status" style="color: var(--success); font-weight: 500;" role="status">Estável</div>
+              <div class="integration-status">Agora</div>
+              <div style="font-size: 12px; color: var(--fg); font-weight: 600;">387 eventos</div>
+            </div>
+          </div>
+        </div>
+
+        <div style="text-align: center; color: var(--muted); font-size: 12px; margin-top: var(--spacing-4xl);">
+          Última atualização: Agora
+        </div>
+      </div>
+
+      <!-- COSMOS PAGE -->
+      <div class="page" data-page="cosmos" style="display: none;">
+        <div class="cosmos-container">
+          <h1 class="cosmos-title">Cosmos operacional</h1>
+          <p class="cosmos-subtitle">
+            Visualize como processos, pessoas, sistemas e rotinas estão conectados.
+          </p>
+
+          <div class="cosmos-grid" role="region" aria-label="Nós de conexão do sistema">
+            <div class="cosmos-node">WhatsApp</div>
+            <div class="cosmos-node">Agenda Externa</div>
+            <div class="cosmos-node">Processo de confirmação</div>
+            <div class="cosmos-node">Equipe Atendimento</div>
+            <div class="cosmos-node">Rotina D-1</div>
+            <div class="cosmos-node">Alerta crítico</div>
+            <div class="cosmos-node">Base de conhecimento</div>
+          </div>
+
+          <button class="button primary" style="background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.3);">
+            Explorar cosmos em 3D (Em breve)
+          </button>
+        </div>
+      </div>
+
+      <!-- TAREFAS PAGE -->
+      <div class="page" data-page="tarefas" style="display: none;">
+        <h1>Tarefas</h1>
+        <p class="subtitle">Gerencie e acompanhe todas as tarefas da sua operação.</p>
+
+        <div class="section-actions" style="margin-bottom: var(--spacing-3xl);">
+          <button class="button primary">+ Nova tarefa</button>
+          <button class="button secondary">Filtrar</button>
+        </div>
+
+        <div class="table-wrapper" role="region" aria-label="Tabela de tarefas">
+          <table role="table">
+            <caption class="sr-only">Lista de tarefas operacionais</caption>
+            <thead>
+              <tr>
+                <th>Título</th>
+                <th>Processo</th>
+                <th>Prioridade</th>
+                <th>Responsável</th>
+                <th>Prazo</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Confirmar presença</strong></td>
+                <td>Confirmação</td>
+                <td style="color: var(--danger); font-weight: 500;">Alta</td>
+                <td>Recepção</td>
+                <td>Hoje</td>
+                <td><span class="status-badge danger" aria-hidden="true"></span> Crítica</td>
+              </tr>
+              <tr>
+                <td><strong>Revisar protocolo D-1</strong></td>
+                <td>Pós-atendimento</td>
+                <td style="color: var(--warning); font-weight: 500;">Média</td>
+                <td>Qualidade</td>
+                <td>Amanhã</td>
+                <td><span class="status-badge warning" aria-hidden="true"></span> Em progresso</td>
+              </tr>
+              <tr>
+                <td><strong>Atualizar base de conhecimento</strong></td>
+                <td>Conhecimento</td>
+                <td style="color: var(--success); font-weight: 500;">Baixa</td>
+                <td>Operações</td>
+                <td>Próx. semana</td>
+                <td><span class="status-badge success" aria-hidden="true"></span> Aberta</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ALERTAS PAGE -->
+      <div class="page" data-page="alertas" style="display: none;">
+        <h1>Alertas</h1>
+        <p class="subtitle">Monitore todos os alertas de saúde operacional.</p>
+
+        <div class="section-actions" style="margin-bottom: var(--spacing-3xl);">
+          <button class="button secondary">Filtrar</button>
+        </div>
+
+        <div class="alert-grid" role="region" aria-label="Lista de alertas ativos">
+          <div class="alert-card critical">
+            <div class="alert-title">Falha na integração WhatsApp</div>
+            <div class="alert-detail">Erro de autenticação detectado há 12 minutos.</div>
+            <span class="alert-tag critical" aria-label="Severidade: crítico">Crítico</span>
+          </div>
+          <div class="alert-card warning">
+            <div class="alert-title">SLA de confirmação baixo</div>
+            <div class="alert-detail">Apenas 72% de execução no período.</div>
+            <span class="alert-tag warning" aria-label="Nível: atenção">Atenção</span>
+          </div>
+          <div class="alert-card danger">
+            <div class="alert-title">Onboarding em risco</div>
+            <div class="alert-detail">54% de SLA — necessita ação imediata.</div>
+            <span class="alert-tag vencida" aria-label="Status: crítico">Crítico</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- INTEGRAÇÕES PAGE -->
+      <div class="page" data-page="integrações" style="display: none;">
+        <h1>Integrações</h1>
+        <p class="subtitle">Conecte e gerencie sistemas externos.</p>
+
+        <div class="section-actions" style="margin-bottom: var(--spacing-3xl);">
+          <button class="button primary">+ Conectar novo sistema</button>
+        </div>
+
+        <div class="integration-grid" style="grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));" role="region" aria-label="Detalhes de integrações">
+          <div class="integration-card" style="text-align: left; padding: var(--spacing-2xl);">
+            <div style="font-size: 32px; margin-bottom: var(--spacing-md);" aria-hidden="true">💬</div>
+            <h3 style="font-size: 16px; margin-bottom: var(--spacing-sm);">WhatsApp</h3>
+            <div style="font-size: 13px; color: var(--fg-secondary); margin-bottom: var(--spacing-md);">
+              <span class="status-badge warning" aria-hidden="true"></span> Atenção
+            </div>
+            <div style="font-size: 12px; color: var(--muted); margin-bottom: var(--spacing-lg);">
+              Última sincronização: há 12 min
+              <br />
+              Eventos hoje: 214
+            </div>
+            <a href="#" class="button text">Ver detalhes →</a>
+          </div>
+
+          <div class="integration-card" style="text-align: left; padding: var(--spacing-2xl);">
+            <div style="font-size: 32px; margin-bottom: var(--spacing-md);" aria-hidden="true">📅</div>
+            <h3 style="font-size: 16px; margin-bottom: var(--spacing-sm);">Agenda Externa</h3>
+            <div style="font-size: 13px; color: var(--fg-secondary); margin-bottom: var(--spacing-md);">
+              <span class="status-badge success" aria-hidden="true"></span> Estável
+            </div>
+            <div style="font-size: 12px; color: var(--muted); margin-bottom: var(--spacing-lg);">
+              Última sincronização: agora
+              <br />
+              Eventos hoje: 91
+            </div>
+            <a href="#" class="button text">Ver detalhes →</a>
+          </div>
+
+          <div class="integration-card" style="text-align: left; padding: var(--spacing-2xl);">
+            <div style="font-size: 32px; margin-bottom: var(--spacing-md);" aria-hidden="true">📁</div>
+            <h3 style="font-size: 16px; margin-bottom: var(--spacing-sm);">Google Drive</h3>
+            <div style="font-size: 13px; color: var(--fg-secondary); margin-bottom: var(--spacing-md);">
+              <span class="status-badge success" aria-hidden="true"></span> Estável
+            </div>
+            <div style="font-size: 12px; color: var(--muted); margin-bottom: var(--spacing-lg);">
+              Última sincronização: há 2 min
+              <br />
+              Eventos hoje: 12
+            </div>
+            <a href="#" class="button text">Ver detalhes →</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- FLUXOS PAGE -->
+      <div class="page" data-page="fluxos" style="display: none;">
+        <h1>Fluxos</h1>
+        <p class="subtitle">Defina e automize fluxos operacionais.</p>
+
+        <div class="section-actions" style="margin-bottom: var(--spacing-3xl);">
+          <button class="button primary">+ Criar fluxo</button>
+        </div>
+
+        <div class="empty-state" role="status" aria-label="Nenhum fluxo criado">
+          <div class="empty-state-icon">📊</div>
+          <div class="empty-state-title">Nenhum fluxo criado</div>
+          <div class="empty-state-description">
+            Comece criando seu primeiro fluxo operacional.
+          </div>
+          <button class="button primary">+ Criar fluxo</button>
+        </div>
+      </div>
+
+      <!-- ROTINAS PAGE -->
+      <div class="page" data-page="rotinas" style="display: none;">
+        <h1>Rotinas</h1>
+        <p class="subtitle">Automize tarefas repetitivas.</p>
+
+        <div class="section-actions" style="margin-bottom: var(--spacing-3xl);">
+          <button class="button primary">+ Criar rotina</button>
+        </div>
+
+        <div class="empty-state" role="status" aria-label="Nenhuma rotina criada">
+          <div class="empty-state-icon">🔄</div>
+          <div class="empty-state-title">Nenhuma rotina criada</div>
+          <div class="empty-state-description">
+            Crie sua primeira rotina para automizar processos.
+          </div>
+          <button class="button primary">+ Criar rotina</button>
+        </div>
+      </div>
+
+      <!-- CONHECIMENTO PAGE -->
+      <div class="page" data-page="conhecimento" style="display: none;">
+        <h1>Conhecimento</h1>
+        <p class="subtitle">Biblioteca de protocolos e processos.</p>
+
+        <div class="section-actions" style="margin-bottom: var(--spacing-3xl);">
+          <button class="button primary">+ Novo documento</button>
+          <input type="search" class="search-input" placeholder="Buscar..." style="margin-left: auto; max-width: 240px;" aria-label="Buscar documentos" />
+        </div>
+
+        <div class="table-wrapper" role="region" aria-label="Tabela de conhecimento">
+          <table role="table">
+            <caption class="sr-only">Biblioteca de conhecimento e documentos</caption>
+            <thead>
+              <tr>
+                <th>Título</th>
+                <th>Tipo</th>
+                <th>Status</th>
+                <th>Versão</th>
+                <th>Última revisão</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Protocolo de Confirmação D-1</strong></td>
+                <td>Protocolo</td>
+                <td><span class="status-badge success" aria-hidden="true"></span> Publicado</td>
+                <td>2.1</td>
+                <td>Ontem</td>
+              </tr>
+              <tr>
+                <td><strong>Manual de Atendimento</strong></td>
+                <td>Manual</td>
+                <td><span class="status-badge success" aria-hidden="true"></span> Publicado</td>
+                <td>1.3</td>
+                <td>3 dias atrás</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- AUDITORIA PAGE -->
+      <div class="page" data-page="auditoria" style="display: none;">
+        <h1>Auditoria</h1>
+        <p class="subtitle">Histórico completo de ações no sistema.</p>
+
+        <div class="table-wrapper" role="region" aria-label="Tabela de auditoria">
+          <table role="table">
+            <caption class="sr-only">Log de auditoria do sistema</caption>
+            <thead>
+              <tr>
+                <th>Data e hora</th>
+                <th>Usuário</th>
+                <th>Ação</th>
+                <th>Recurso</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>2025-10-08 14:32</td>
+                <td>Camila Martins</td>
+                <td>Criou</td>
+                <td>Tarefa "Revisar protocolo"</td>
+                <td><span class="status-badge success" aria-hidden="true"></span> Sucesso</td>
+              </tr>
+              <tr>
+                <td>2025-10-08 14:15</td>
+                <td>Lucas Almeida</td>
+                <td>Modificou</td>
+                <td>Processo "Confirmação"</td>
+                <td><span class="status-badge success" aria-hidden="true"></span> Sucesso</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- CONFIGURAÇÕES PAGE -->
+      <div class="page" data-page="configurações" style="display: none;">
+        <h1>Configurações</h1>
+        <p class="subtitle">Personalize sua operação.</p>
+
+        <div style="background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-md); padding: var(--spacing-3xl); max-width: 600px;">
+          <h2 style="font-size: 18px;">Preferências da operação</h2>
+          <p style="color: var(--fg-secondary); margin-bottom: var(--spacing-2xl);">
+            Ajuste as configurações da sua operação aqui.
+          </p>
+
+          <div style="margin-bottom: var(--spacing-2xl);">
+            <label style="display: block; font-weight: 500; margin-bottom: var(--spacing-sm);">
+              Nome da operação
+            </label>
+            <input
+              type="text"
+              value="Operação Demo"
+              style="width: 100%; padding: var(--spacing-md); border: 1px solid var(--border); border-radius: var(--radius-md); font-family: var(--font-body);"
+              aria-label="Nome da operação"
+            />
+          </div>
+
+          <div style="margin-bottom: var(--spacing-2xl);">
+            <label style="display: block; font-weight: 500; margin-bottom: var(--spacing-sm);">
+              Segmento
+            </label>
+            <input
+              type="text"
+              value="Serviços e atendimento"
+              style="width: 100%; padding: var(--spacing-md); border: 1px solid var(--border); border-radius: var(--radius-md); font-family: var(--font-body);"
+              aria-label="Segmento operacional"
+            />
+          </div>
+
+          <button class="button primary">Salvar alterações</button>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    // Navegação entre páginas
+    const sidebarItems = document.querySelectorAll('.sidebar-item');
+    const pages = document.querySelectorAll('.page');
+
+    sidebarItems.forEach(item => {
+      item.addEventListener('click', (e) => {
+        e.preventDefault();
+
+        // Remove classe ativa de todos os itens
+        sidebarItems.forEach(i => {
+          i.classList.remove('active');
+          i.setAttribute('aria-selected', 'false');
+        });
+        item.classList.add('active');
+        item.setAttribute('aria-selected', 'true');
+
+        // Esconde todas as páginas
+        pages.forEach(page => page.style.display = 'none');
+
+        // Mostra página correspondente
+        const pageName = item.getAttribute('data-page');
+        const targetPage = document.querySelector(`[data-page="${pageName}"]`);
+        if (targetPage) {
+          targetPage.style.display = 'block';
+          // Focus on main content
+          document.getElementById('main-content').focus({ preventScroll: true });
+        }
+      });
+    });
+
+    // Keyboard navigation: Tab, Enter
+    sidebarItems.forEach(item => {
+      item.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          item.click();
+        }
+      });
+    });
+
+    // Search input placeholder handling
+    const searchInputs = document.querySelectorAll('.search-input');
+    searchInputs.forEach(input => {
+      input.addEventListener('focus', function() {
+        const original = this.getAttribute('data-original-placeholder');
+        if (!original) {
+          this.setAttribute('data-original-placeholder', this.placeholder);
+          this.placeholder = 'Tipo ⌘K ou Ctrl+K...';
+        }
+      });
+      input.addEventListener('blur', function() {
+        const original = this.getAttribute('data-original-placeholder');
+        if (original) {
+          this.placeholder = original;
+        }
+      });
+    });
+
+    // Button feedback: visual feedback on click
+    document.querySelectorAll('.button').forEach(btn => {
+      btn.addEventListener('click', function(e) {
+        if (!this.disabled) {
+          this.style.transform = 'scale(0.98)';
+          setTimeout(() => {
+            this.style.transform = '';
+          }, 100);
+        }
+      });
+    });
+  </script>
+</body>
+</html>

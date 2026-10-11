@@ -1,0 +1,68 @@
+[
+  {
+    "name": "jev-os-monorepo",
+    "version": "0.1.0",
+    "path": "C:\\Users\\maiam\\AppData\\Roaming\\Open Design\\namespaces\\release-stable-win\\data\\projects\\89ddc8cf-b241-4de4-95b0-84e62fe8de14",
+    "private": true
+  },
+  {
+    "name": "@jev/ai-gateway",
+    "version": "0.1.0",
+    "path": "C:\\Users\\maiam\\AppData\\Roaming\\Open Design\\namespaces\\release-stable-win\\data\\projects\\89ddc8cf-b241-4de4-95b0-84e62fe8de14\\packages\\ai-gateway",
+    "private": false
+  },
+  {
+    "name": "@jev/evidence-engine",
+    "version": "0.1.0",
+    "path": "C:\\Users\\maiam\\AppData\\Roaming\\Open Design\\namespaces\\release-stable-win\\data\\projects\\89ddc8cf-b241-4de4-95b0-84e62fe8de14\\packages\\evidence-engine",
+    "private": false
+  },
+  {
+    "name": "@jev/intent-router",
+    "version": "0.1.0",
+    "path": "C:\\Users\\maiam\\AppData\\Roaming\\Open Design\\namespaces\\release-stable-win\\data\\projects\\89ddc8cf-b241-4de4-95b0-84e62fe8de14\\packages\\intent-router",
+    "private": false
+  },
+  {
+    "name": "@jev/orchestrator",
+    "version": "0.1.0",
+    "path": "C:\\Users\\maiam\\AppData\\Roaming\\Open Design\\namespaces\\release-stable-win\\data\\projects\\89ddc8cf-b241-4de4-95b0-84e62fe8de14\\packages\\jev-orchestrator",
+    "private": false
+  },
+  {
+    "name": "@jev/policy-engine",
+    "version": "0.1.0",
+    "path": "C:\\Users\\maiam\\AppData\\Roaming\\Open Design\\namespaces\\release-stable-win\\data\\projects\\89ddc8cf-b241-4de4-95b0-84e62fe8de14\\packages\\policy-engine",
+    "private": false
+  },
+  {
+    "name": "@jev/response-composer",
+    "version": "0.1.0",
+    "path": "C:\\Users\\maiam\\AppData\\Roaming\\Open Design\\namespaces\\release-stable-win\\data\\projects\\89ddc8cf-b241-4de4-95b0-84e62fe8de14\\packages\\response-composer",
+    "private": false
+  },
+  {
+    "name": "@jev/script-registry",
+    "version": "0.1.0",
+    "path": "C:\\Users\\maiam\\AppData\\Roaming\\Open Design\\namespaces\\release-stable-win\\data\\projects\\89ddc8cf-b241-4de4-95b0-84e62fe8de14\\packages\\script-registry",
+    "private": false
+  },
+  {
+    "name": "@jev/script-runtime",
+    "version": "0.1.0",
+    "path": "C:\\Users\\maiam\\AppData\\Roaming\\Open Design\\namespaces\\release-stable-win\\data\\projects\\89ddc8cf-b241-4de4-95b0-84e62fe8de14\\packages\\script-runtime",
+    "private": false
+  },
+  {
+    "name": "@jev/scripts",
+    "version": "0.1.0",
+    "path": "C:\\Users\\maiam\\AppData\\Roaming\\Open Design\\namespaces\\release-stable-win\\data\\projects\\89ddc8cf-b241-4de4-95b0-84e62fe8de14\\packages\\scripts",
+    "private": false
+  },
+  {
+    "name": "@jev/shared-types",
+    "version": "0.1.0",
+    "path": "C:\\Users\\maiam\\AppData\\Roaming\\Open Design\\namespaces\\release-stable-win\\data\\projects\\89ddc8cf-b241-4de4-95b0-84e62fe8de14\\packages\\shared-types",
+    "private": false
+  }
+]

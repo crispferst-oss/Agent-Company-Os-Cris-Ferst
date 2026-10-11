@@ -1,0 +1,47 @@
+# Dependencies
+node_modules/
+
+# Build artifacts
+dist/
+*.tsbuildinfo
+.turbo/
+
+# Test
+coverage/
+
+# Editor
+.vscode/
+.idea/
+
+# OS
+Thumbs.db
+.DS_Store
+
+# Logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+
+# Local env
+.env
+.env.local
+.env.*.local
+
+# Local override of claude settings
+.claude/settings.local.json
+
+# Scratch
+scratch/
+tmp/
+
+# Material jurídico com potencial PII — não versionar sem revisão explícita
+Documentos Consultoria - Cristhiane Ferst/
+Documentos Consultoria - Cristhiane Ferst.zip
+
+# Caches locais
+.file-versions/
+Microsoft VS Code/
+
+# Local override do settings Claude
+.claude/settings.local.json
+

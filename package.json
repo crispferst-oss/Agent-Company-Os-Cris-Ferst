@@ -1,0 +1,26 @@
+{
+  "name": "jev-os-monorepo",
+  "version": "0.1.0",
+  "private": true,
+  "packageManager": "pnpm@10.34.6",
+  "engines": { "node": "^22.13.0 || >=24" },
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "turbo run dev --parallel",
+    "build": "turbo run build",
+    "typecheck": "turbo run typecheck",
+    "verify": "pnpm typecheck && pnpm build && pnpm test && pnpm lint",
+    "test": "turbo run test",
+    "lint": "turbo run lint"
+  },
+  "devDependencies": {
+    "eslint": "^10.0.0",
+    "@eslint/js": "^10.0.0",
+    "@typescript-eslint/parser": "^8.0.0",
+    "typescript": "^5.3.0",
+    "turbo": "^1.10.0",
+    "@types/node": "^20.0.0"
+  }
+}

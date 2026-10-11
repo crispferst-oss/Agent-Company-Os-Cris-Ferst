@@ -1,0 +1,48 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "CommonJS",
+    "moduleResolution": "Node",
+    "strict": true,
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "skipLibCheck": false,
+    "noEmitOnError": true,
+    "types": [
+      "node"
+    ],
+    "baseUrl": ".",
+    "paths": {
+      "@jev/ai-gateway": [
+        "packages/ai-gateway/src/index.ts"
+      ],
+      "@jev/evidence-engine": [
+        "packages/evidence-engine/src/index.ts"
+      ],
+      "@jev/intent-router": [
+        "packages/intent-router/src/index.ts"
+      ],
+      "@jev/orchestrator": [
+        "packages/jev-orchestrator/src/index.ts"
+      ],
+      "@jev/policy-engine": [
+        "packages/policy-engine/src/index.ts"
+      ],
+      "@jev/response-composer": [
+        "packages/response-composer/src/index.ts"
+      ],
+      "@jev/script-registry": [
+        "packages/script-registry/src/index.ts"
+      ],
+      "@jev/script-runtime": [
+        "packages/script-runtime/src/index.ts"
+      ],
+      "@jev/scripts": [
+        "packages/scripts/src/index.ts"
+      ],
+      "@jev/shared-types": [
+        "packages/shared-types/src/index.ts"
+      ]
+    }
+  }
+}
