@@ -42,6 +42,15 @@
       ],
       "@jev/shared-types": [
         "packages/shared-types/src/index.ts"
+      ],
+      "@jev/nsas-ingresso": [
+        "packages/nsas-ingresso/src/index.ts"
+      ],
+      "@jev/nsas-especialistas": [
+        "packages/nsas-especialistas/src/index.ts"
+      ],
+      "@jev/nsas-nucleo": [
+        "packages/nsas-nucleo/src/index.ts"
       ]
     }
   }
