@@ -49,6 +49,9 @@
       "@jev/nsas-especialistas": [
         "packages/nsas-especialistas/src/index.ts"
       ],
+      "@jev/nsas-orchestrator": [
+        "packages/nsas-orchestrator/src/index.ts"
+      ],
       "@jev/nsas-nucleo": [
         "packages/nsas-nucleo/src/index.ts"
       ]
