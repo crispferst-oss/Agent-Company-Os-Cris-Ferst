@@ -5,3 +5,4 @@ export * from './persistencia';
 export * from './selo';
 export * from './auditoria';
 export * from './execucao';
+export * from './aprovacao';
