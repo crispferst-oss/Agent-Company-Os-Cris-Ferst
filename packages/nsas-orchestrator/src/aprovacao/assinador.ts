@@ -100,6 +100,48 @@ export class AssinadorOabEd25519 implements AssinadorOab {
     }
   }
 
+  /**
+   * Assina o canonicalJson do manifesto SEM os campos `manifesto_hash`
+   * e `assinatura_ed25519` (que são preenchidos pela emissão).
+   * Retorna {hash, sig}; emissão compõe o ManifestoEmissao final.
+   */
+  async assinarManifesto(
+    manifestoSemAssinatura: {
+      readonly caso_id: string;
+      readonly artefato_path: string;
+      readonly artefato_hash: string;
+      readonly aprovacao: AprovacaoAssinada;
+      readonly carimbo_versoes: ReadonlyArray<string>;
+    },
+    passphrase: string,
+  ): Promise<{ manifesto_hash: string; assinatura_ed25519: string }> {
+    if (typeof passphrase !== 'string' || passphrase.length === 0) {
+      throw new ErroOrquestrador('passphrase_invalida', 'Passphrase obrigatória.');
+    }
+    const pem = this.lerPem();
+    let chavePrivada: KeyObject | null = null;
+    try {
+      try {
+        chavePrivada = createPrivateKey({ key: pem, format: 'pem', passphrase });
+      } catch {
+        throw new ErroOrquestrador('passphrase_invalida', 'Passphrase incorreta ou PEM inválido.');
+      }
+      if (chavePrivada.asymmetricKeyType !== 'ed25519') {
+        throw new ErroOrquestrador('passphrase_invalida', 'Chave OAB deve ser Ed25519.');
+      }
+      const canonico = canonicalJson(manifestoSemAssinatura);
+      const bytes = Buffer.from(canonico, 'utf8');
+      const manifesto_hash = require('node:crypto').createHash('sha256').update(bytes).digest('base64url');
+      const sig = sign(null, bytes, chavePrivada);
+      if (!verify(null, bytes, this.chavePublica, sig)) {
+        throw new ErroOrquestrador('passphrase_invalida', 'Assinatura de manifesto não verifica.');
+      }
+      return { manifesto_hash, assinatura_ed25519: sig.toString('base64url') };
+    } finally {
+      chavePrivada = null;
+    }
+  }
+
   private lerPem(): string {
     try {
       return readFileSync(this.config.caminhoChavePrivada, 'utf8');

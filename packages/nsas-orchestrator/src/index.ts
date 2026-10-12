@@ -6,3 +6,4 @@ export * from './selo';
 export * from './auditoria';
 export * from './execucao';
 export * from './aprovacao';
+export * from './cli';
