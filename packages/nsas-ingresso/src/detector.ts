@@ -30,10 +30,13 @@ const MIMES_CLINICOS_DUROS = new Set<string>([
 ]);
 
 /**
- * Extensões típicas de laudo/exame/imagem médica.
- * Combinam com `application/pdf` ou `application/octet-stream` para configurar DC-1.
+ * Termos clínicos canônicos usados para flaguear nome de arquivo (DC-1 Fase A)
+ * e, por outros pacotes, para scan defensivo em texto corrido (segunda camada
+ * de validação em `nsas-especialistas`, por exemplo).
+ *
+ * Exportar o padrão evita duplicação de regex entre pacotes.
  */
-const EXTENSOES_SUSPEITAS = /\.(dcm|dicom|hl7|fhir|laudo|exame|prontuario|prontuário|rx|ecg|usg|tc|rm|mamografia)(\.|$)/iu;
+export const PADROES_TERMOS_CLINICOS = /(^|[._-])(dcm|dicom|hl7|fhir|laudo|exame|prontuario|prontuário|rx|ecg|usg|tc|rm|mamografia)([._-]|$)/iu;
 
 /**
  * Classifica um anexo quanto a dado clínico binário (DC-1).
@@ -53,7 +56,7 @@ export function classificarAnexoDC1(anexo: AnexoBruto): NsasDetectorVeredicto {
     };
   }
 
-  if (EXTENSOES_SUSPEITAS.test(nome)) {
+  if (PADROES_TERMOS_CLINICOS.test(nome)) {
     return {
       classe: 'DC-1',
       confianca: 0.9,
